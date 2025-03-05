@@ -166,28 +166,25 @@ namespace ScannerAPIProject.Services
 
             var regexPatterns = new List<string>
             {
-                @"define\(\[.*?'(\/Sida\/[^\']+\.js)'",
-                @"define\(\[.*?'(Sida\/[^\']+\.js)'"
+               @"\/Sida\/App\/directives\/[a-zA-Z0-9_]+\.js"  
             };
 
-
+            string basePath = @"C:\Users\reza.o\source\repos\sida-cross-platform2\Pajoohesh.School.Web\wwwroot\";
+            var fullPaths = new List<string>();
 
             foreach (var pattern in regexPatterns)
             {
                 var matches = Regex.Matches(fileContent, pattern, RegexOptions.IgnoreCase);
+
                 foreach (Match match in matches)
                 {
-                    var apiUrl = match.Groups[1].Value.Trim();
-                    if (!string.IsNullOrEmpty(apiUrl))
+                    var apiUrl = match.Value.Trim(); 
+                    if (!string.IsNullOrEmpty(apiUrl) && !apiUrls.Contains(apiUrl))
                     {
                         apiUrls.Add(apiUrl);
-
                     }
                 }
             }
-
-            string basePath = @"C:\Users\reza.o\source\repos\sida-cross-platform2\Pajoohesh.School.Web\wwwroot\";
-            var fullPaths = new List<string>();
 
             foreach (var item in apiUrls)
             {
@@ -200,6 +197,8 @@ namespace ScannerAPIProject.Services
 
             return result;
         }
+
+
 
         private List<string> ExtractRedirects(string fileContent)
         {
@@ -233,7 +232,8 @@ namespace ScannerAPIProject.Services
 
         public List<string> ExtractApiFromDirectives(List<string> directives)
         {
-            Regex apiPattern = new Regex(@"api/[^\""?']+[^\.html] | ^/api[^\""?']*[^\.html]$ ", RegexOptions.IgnoreCase);
+            Regex apiPattern = new Regex(@"(?:\/)?api\/[^\""""?']+[^\.html]", RegexOptions.IgnoreCase);
+
             string[] jsFiles = directives.ToArray();
 
             List<string> apis = new();
@@ -250,7 +250,10 @@ namespace ScannerAPIProject.Services
                         string apiRoute = apiMatch.Value
                                                   .Trim()
                                                   .ToLower();
-                        if (!apis.Any(api => api == apiRoute))
+
+                        apiRoute =  apiRoute.TrimEnd('\'');
+
+                        if (!apis.Contains(apiRoute))
                         {
                             apis.Add(apiRoute);
                         }
