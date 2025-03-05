@@ -34,7 +34,7 @@ namespace ScannerAPIProject.Services
                 string folderPath = Path.GetDirectoryName(jsFile);
                 string folderName = new DirectoryInfo(folderPath).Name;
 
-                var existingPage = await _context.MenuPages.Where(p => p.ControllerName == controllerName && p.FolderName == folderName) 
+                var existingPage = await _context.MenuPages.Where(p => p.ControllerName == controllerName && p.FolderName == folderName)
                                                            .FirstOrDefaultAsync();
 
                 if (existingPage == null)
@@ -54,7 +54,7 @@ namespace ScannerAPIProject.Services
                 apiUrls.AddRange(popUps);
 
 
-                if (apiUrls.Count>0)
+                if (apiUrls.Count > 0)
                 {
                     foreach (var api in apiUrls)
                     {
@@ -71,7 +71,7 @@ namespace ScannerAPIProject.Services
                 }
             }
 
-            if (menuPageApi.Count>0)
+            if (menuPageApi.Count > 0)
             {
                 _context.MenuPageApis.AddRange(menuPageApi);
                 await _context.SaveChangesAsync();
@@ -84,13 +84,13 @@ namespace ScannerAPIProject.Services
 
             var regexPatterns = new List<string>
             {
-                @"['""](\/api\/[\w\/-]+)['""]",
-                @"['""](\/api\/[^'""?]+\?[^'""]+)['""]",
-                @"`(\/api\/[^`]+)`",
-                @"\$scope\.\w+API\s*=\s*['""]([^'""]+)['""]",
-                @"['""](api\/[^'""?]+|\/api\/[^'""?]+)['""]",
-                @"url:\s*['""](api\/[^'""?]+|\/api\/[^'""?]+)['""]",
-                @"api/[^\""?']+"
+               @"['""](\/api\/[\w\/-]+)['""]",
+               @"['""](\/api\/[^'""?]+\?[^'""]+)['""]",
+               @"`(\/api\/[^`]+)`",
+               @"\$scope\.\w+API\s*=\s*['""]([^'""]+)['""]",
+               @"['""](api\/[^'""?]+|\/api\/[^'""?]+)['""]",
+               @"url:\s*['""](\/?api\/[^\s'""]+)",
+               @"api/[^\""?']+"
             };
 
             foreach (var pattern in regexPatterns)
@@ -101,6 +101,7 @@ namespace ScannerAPIProject.Services
                     var apiUrl = match.Groups[1].Value.Trim();
                     if (!string.IsNullOrEmpty(apiUrl))
                     {
+                        apiUrl = Regex.Replace(apiUrl, @"\?.*", "");
                         apiUrls.Add(apiUrl);
                     }
                 }
@@ -116,7 +117,7 @@ namespace ScannerAPIProject.Services
 
             var regexPatterns = new List<string>
             {
-               @"\/Sida\/App\/directives\/[a-zA-Z0-9_]+\.js"  
+               @"\/Sida\/App\/directives\/[a-zA-Z0-9_]+\.js"
             };
 
             string basePath = @"C:\Users\reza.o\source\repos\sida-cross-platform2\Pajoohesh.School.Web\wwwroot\";
@@ -128,7 +129,7 @@ namespace ScannerAPIProject.Services
 
                 foreach (Match match in matches)
                 {
-                    var apiUrl = match.Value.Trim(); 
+                    var apiUrl = match.Value.Trim();
                     if (!string.IsNullOrEmpty(apiUrl) && !popups.Contains(apiUrl))
                     {
                         popups.Add(apiUrl);
