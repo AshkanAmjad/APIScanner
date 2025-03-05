@@ -26,8 +26,7 @@ namespace ApiScannerConsole
             while (true)
             {
                 Console.WriteLine("1. Automatic Scan");
-                Console.WriteLine("2. Add Your API and Redirect");
-                Console.WriteLine("3. Exit");
+                Console.WriteLine("2. Exit");
                 Console.Write("Choose: ");
                 string choice = Console.ReadLine();
 
@@ -38,15 +37,11 @@ namespace ApiScannerConsole
                 }
                 else if (choice == "2")
                 {
-                    await service.AddManualEntryAsync();
-                }
-                else if (choice == "3")
-                {
                     break;
                 }
                 else
                 {
-                    Console.WriteLine("Wrong option");
+                    Console.WriteLine("Error");
                 }
             }
         }
