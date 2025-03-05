@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics.Contracts;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using ScannerAPIProject.Context;
 using ScannerAPIProject.Models;
@@ -47,6 +48,8 @@ namespace ScannerAPIProject.Services
 
                 var apiUrls = ExtractApiEndpoints(fileContent);
                 var redirects = ExtractRedirects(fileContent);
+                var popUps = ExtractPopupEndpoints(fileContent);
+                apiUrls.AddRange(popUps);
 
                 foreach (var api in apiUrls)
                 {
@@ -156,6 +159,48 @@ namespace ScannerAPIProject.Services
             return apiUrls.Distinct().ToList();
         }
 
+
+        private List<string> ExtractPopupEndpoints(string fileContent)
+        {
+            var apiUrls = new List<string>();
+
+            var regexPatterns = new List<string>
+            {
+                @"define\(\[.*?'(\/Sida\/[^\']+\.js)'",
+                @"define\(\[.*?'(Sida\/[^\']+\.js)'"
+            };
+
+
+
+            foreach (var pattern in regexPatterns)
+            {
+                var matches = Regex.Matches(fileContent, pattern, RegexOptions.IgnoreCase);
+                foreach (Match match in matches)
+                {
+                    var apiUrl = match.Groups[1].Value.Trim();
+                    if (!string.IsNullOrEmpty(apiUrl))
+                    {
+                        apiUrls.Add(apiUrl);
+
+                    }
+                }
+            }
+
+            string basePath = @"C:\Users\reza.o\source\repos\sida-cross-platform2\Pajoohesh.School.Web\wwwroot\";
+            var fullPaths = new List<string>();
+
+            foreach (var item in apiUrls)
+            {
+                string correctedPath = item.Replace("/", "\\");
+                string fullPath = Path.Combine(basePath, correctedPath.TrimStart('\\'));
+                fullPaths.Add(fullPath);
+            }
+
+            var result = ExtractApiFromDirectives(fullPaths);
+
+            return result;
+        }
+
         private List<string> ExtractRedirects(string fileContent)
         {
             var redirects = new List<string>();
@@ -185,5 +230,43 @@ namespace ScannerAPIProject.Services
 
             return redirects.Distinct().ToList();
         }
+
+        public List<string> ExtractApiFromDirectives(List<string> directives)
+        {
+            Regex apiPattern = new Regex(@"api/[^\""?']+[^\.html]", RegexOptions.IgnoreCase);
+            string[] jsFiles = directives.ToArray();
+
+            List<string> apis = new();
+
+
+            foreach (var file in jsFiles)
+            {
+                string[] lines = File.ReadAllLines(file);
+                foreach (var line in lines)
+                {
+                    var apiMatch = apiPattern.Match(line);
+                    if (apiMatch.Success)
+                    {
+                        string apiRoute = apiMatch.Value
+                                                  .Trim()
+                                                  .ToLower();
+                        if (!apis.Any(api => api == apiRoute))
+                        {
+                            apis.Add(apiRoute);
+                        }
+
+                    }
+
+                }
+            }
+
+            return apis;
+
+        }
     }
 }
+
+
+
+
+
