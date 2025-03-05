@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using ScannerAPIProject.Context;
 using ScannerAPIProject.Models;
+using ScannerAPIProject.Models.Entities;
 
 namespace ScannerAPIProject.Services
 {
@@ -22,6 +23,7 @@ namespace ScannerAPIProject.Services
                 Console.WriteLine($"Not Found => {rootPath}");
                 return;
             }
+            HashSet<MenuPageApi> menuPageApi = new();
 
             var jsFiles = Directory.GetFiles(rootPath, "*controller.js", SearchOption.AllDirectories);
 
@@ -32,8 +34,8 @@ namespace ScannerAPIProject.Services
                 string folderPath = Path.GetDirectoryName(jsFile);
                 string folderName = new DirectoryInfo(folderPath).Name;
 
-                var existingPage = await _context.MenuPages
-                    .FirstOrDefaultAsync(p => p.ControllerName == controllerName && p.FolderName == folderName);
+                var existingPage = await _context.MenuPages.Where(p => p.ControllerName == controllerName && p.FolderName == folderName) 
+                                                           .FirstOrDefaultAsync();
 
                 if (existingPage == null)
                 {
@@ -51,34 +53,38 @@ namespace ScannerAPIProject.Services
                 var popUps = ExtractPopupEndpoints(fileContent);
                 apiUrls.AddRange(popUps);
 
-                foreach (var api in apiUrls)
-                {
-                    string redirectUrl = redirects.FirstOrDefault() ?? string.Empty; // اگر مقدار ریدایرکت یافت نشد، از رشته خالی استفاده کن
 
-                    if (!_context.MenuPageApis.Any(a => a.ApiUrl == api && a.MenuPageId == existingPage.Id))
+                if (apiUrls.Count != 0)
+                {
+                    foreach (var api in apiUrls)
                     {
-                        _context.MenuPageApis.Add(new MenuPageApi
+                        string redirectUrl = redirects.FirstOrDefault() ?? string.Empty; // اگر مقدار ریدایرکت یافت نشد، از رشته خالی استفاده کن
+
+                        //if (!_context.MenuPageApis.Any(a => a.ApiUrl == api && a.MenuPageId == existingPage.Id))
+                        //{
+                        //    _context.MenuPageApis.Add(new MenuPageApi
+                        //    {
+                        //        ApiUrl = api,
+                        //        RedirectUrl = redirectUrl, // استفاده از مقدار ریدایرکت یا رشته خالی
+                        //        MenuPageId = existingPage.Id
+                        //    });
+                        //}
+
+                        menuPageApi.Add(new MenuPageApi
                         {
                             ApiUrl = api,
-                            RedirectUrl = redirectUrl, // استفاده از مقدار ریدایرکت یا رشته خالی
+                            RedirectUrl = redirectUrl,
                             MenuPageId = existingPage.Id
                         });
-                        await _context.SaveChangesAsync();
+
                     }
                 }
+            }
 
-
-                var menuPageApis = await _context.MenuPageApis
-                    .Where(a => a.MenuPageId == existingPage.Id)
-                    .ToListAsync();
-
-                Console.WriteLine($"Folder: {folderName}");
-                Console.WriteLine($"Controller: {controllerName}");
-                Console.WriteLine("APIs:");
-                foreach (var api in menuPageApis)
-                {
-                    Console.WriteLine($"  - {api.ApiUrl} (Redirect: {api.RedirectUrl})");
-                }
+            if (menuPageApi.Count != 0)
+            {
+                _context.MenuPageApis.AddRange(menuPageApi);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -90,8 +96,8 @@ namespace ScannerAPIProject.Services
             Console.WriteLine("enter controller name :");
             string controllerName = Console.ReadLine();
 
-            var existingPage = await _context.MenuPages
-                .FirstOrDefaultAsync(p => p.ControllerName == controllerName && p.FolderName == folderName);
+            var existingPage = await _context.MenuPages.Where(p => p.ControllerName == controllerName && p.FolderName == folderName)
+                                                       .FirstOrDefaultAsync();
 
             if (existingPage == null)
             {
@@ -100,6 +106,7 @@ namespace ScannerAPIProject.Services
                     FolderName = folderName,
                     ControllerName = controllerName
                 };
+
                 _context.MenuPages.Add(existingPage);
                 await _context.SaveChangesAsync();
             }
@@ -251,7 +258,7 @@ namespace ScannerAPIProject.Services
                                                   .Trim()
                                                   .ToLower();
 
-                        apiRoute =  apiRoute.TrimEnd('\'');
+                        apiRoute = apiRoute.TrimEnd('\"', '\'');
 
                         if (!apis.Contains(apiRoute))
                         {

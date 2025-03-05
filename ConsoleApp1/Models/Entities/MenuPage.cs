@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ApiScannerConsole;
 
-namespace ScannerAPIProject.Models
+namespace ScannerAPIProject.Models.Entities
 {
     public class MenuPage
     {
