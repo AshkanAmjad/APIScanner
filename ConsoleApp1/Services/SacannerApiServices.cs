@@ -233,7 +233,7 @@ namespace ScannerAPIProject.Services
 
         public List<string> ExtractApiFromDirectives(List<string> directives)
         {
-            Regex apiPattern = new Regex(@"api/[^\""?']+[^\.html]", RegexOptions.IgnoreCase);
+            Regex apiPattern = new Regex(@"api/[^\""?']+[^\.html] | ^/api[^\""?']*[^\.html]$ ", RegexOptions.IgnoreCase);
             string[] jsFiles = directives.ToArray();
 
             List<string> apis = new();
