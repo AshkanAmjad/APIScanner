@@ -16,7 +16,7 @@ namespace ScannerAPIProject.Services
             _context = context;
         }
 
-        public async Task ScanAndSaveAllControllersAsync(string rootPath)
+        public async Task ScanAndSaveAllControllersAndApisAsync(string rootPath)
         {
             if (!Directory.Exists(rootPath))
             {
@@ -59,16 +59,6 @@ namespace ScannerAPIProject.Services
                     foreach (var api in apiUrls)
                     {
                         string redirectUrl = redirects.FirstOrDefault() ?? string.Empty; // اگر مقدار ریدایرکت یافت نشد، از رشته خالی استفاده کن
-
-                        //if (!_context.MenuPageApis.Any(a => a.ApiUrl == api && a.MenuPageId == existingPage.Id))
-                        //{
-                        //    _context.MenuPageApis.Add(new MenuPageApi
-                        //    {
-                        //        ApiUrl = api,
-                        //        RedirectUrl = redirectUrl, // استفاده از مقدار ریدایرکت یا رشته خالی
-                        //        MenuPageId = existingPage.Id
-                        //    });
-                        //}
 
                         menuPageApi.Add(new MenuPageApi
                         {
@@ -122,7 +112,7 @@ namespace ScannerAPIProject.Services
 
         private List<string> ExtractPopupEndpoints(string fileContent)
         {
-            var apiUrls = new List<string>();
+            var popups = new List<string>();
 
             var regexPatterns = new List<string>
             {
@@ -139,14 +129,14 @@ namespace ScannerAPIProject.Services
                 foreach (Match match in matches)
                 {
                     var apiUrl = match.Value.Trim(); 
-                    if (!string.IsNullOrEmpty(apiUrl) && !apiUrls.Contains(apiUrl))
+                    if (!string.IsNullOrEmpty(apiUrl) && !popups.Contains(apiUrl))
                     {
-                        apiUrls.Add(apiUrl);
+                        popups.Add(apiUrl);
                     }
                 }
             }
 
-            foreach (var item in apiUrls)
+            foreach (var item in popups)
             {
                 string correctedPath = item.Replace("/", "\\");
                 string fullPath = Path.Combine(basePath, correctedPath.TrimStart('\\'));
@@ -195,7 +185,7 @@ namespace ScannerAPIProject.Services
 
             string[] jsFiles = directives.ToArray();
 
-            List<string> apis = new();
+            List<string> apiUrls = new();
 
 
             foreach (var file in jsFiles)
@@ -207,23 +197,18 @@ namespace ScannerAPIProject.Services
                     if (apiMatch.Success)
                     {
                         string apiRoute = apiMatch.Value
-                                                  .Trim()
-                                                  .ToLower();
+                                                  .Trim();
 
                         apiRoute = apiRoute.TrimEnd('\"', '\'');
 
-                        if (!apis.Contains(apiRoute))
+                        if (!apiUrls.Contains(apiRoute))
                         {
-                            apis.Add(apiRoute);
+                            apiUrls.Add(apiRoute);
                         }
-
                     }
-
                 }
             }
-
-            return apis;
-
+            return apiUrls;
         }
     }
 }

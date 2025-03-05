@@ -12,7 +12,7 @@ namespace ScannerAPIProject.Context
     {
         public ScannerAPIContext(DbContextOptions<ScannerAPIContext> options) : base(options) { }
 
-        public DbSet<MenuPage> MenuPages { get; set; }
-        public DbSet<MenuPageApi> MenuPageApis { get; set; }
+        public virtual DbSet<MenuPage> MenuPages { get; set; }
+        public virtual DbSet<MenuPageApi> MenuPageApis { get; set; }
     }
 }

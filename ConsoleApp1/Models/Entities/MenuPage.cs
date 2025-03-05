@@ -12,6 +12,6 @@ namespace ScannerAPIProject.Models.Entities
         public int Id { get; set; }
         public string FolderName { get; set; }
         public string ControllerName { get; set; }
-        public ICollection<MenuPageApi> MenuPageApis { get; set; }
+        public virtual ICollection<MenuPageApi> MenuPageApis { get; set; }
     }
 }

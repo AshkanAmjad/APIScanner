@@ -33,7 +33,7 @@ namespace ApiScannerConsole
                 if (choice == "1")
                 {
                     string rootPath = @"C:\Users\reza.o\source\repos\sida-cross-platform2\Pajoohesh.School.Web\wwwroot\Sida\App\views";
-                    await service.ScanAndSaveAllControllersAsync(rootPath);
+                    await service.ScanAndSaveAllControllersAndApisAsync(rootPath);
                 }
                 else if (choice == "2")
                 {
