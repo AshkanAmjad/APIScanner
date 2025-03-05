@@ -54,7 +54,7 @@ namespace ScannerAPIProject.Services
                 apiUrls.AddRange(popUps);
 
 
-                if (apiUrls.Count != 0)
+                if (apiUrls.Count>0)
                 {
                     foreach (var api in apiUrls)
                     {
@@ -81,7 +81,7 @@ namespace ScannerAPIProject.Services
                 }
             }
 
-            if (menuPageApi.Count != 0)
+            if (menuPageApi.Count>0)
             {
                 _context.MenuPageApis.AddRange(menuPageApi);
                 await _context.SaveChangesAsync();
